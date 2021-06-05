@@ -20,14 +20,12 @@ func ExampleFunc() {
 // HTMLLinks is a more real-world example of how Func can be used. It
 // fetches the URLs given in parallel and returns all the unique links
 // found.
-//
-// Note how gathering results from
 func HTMLLinks(urls ...string) (links StringSet, err error) {
 	nSites := len(urls)
 
 	// we want to get a list of links from each of the sites in urls.
 	//
-	// Reserve space for each of their link sets them up front. This
+	// Reserve space for each of their link sets up front. This
 	// way each goroutine has its own "slot" in results that it can
 	// write to without worrying about concurrent access.
 	//
