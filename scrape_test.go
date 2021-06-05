@@ -10,15 +10,16 @@ import (
 )
 
 func ExampleFunc() {
-	// get all the links in the Go blog, then in all the pages those pages link to, up to 3 levels
-	// deep.
+	// get all the links in the Go blog, then in all the pages those
+	// pages link to, up to 3 levels deep.
 	links := Scrape(3, "https://blog.golang.org/examples")
 
 	fmt.Printf("links %d: %v", len(links), links)
 }
 
-// HTMLLinks is a more real-world example of how Func can be used. It fetches the URLs given in
-// parallel and returns all the unique links found.
+// HTMLLinks is a more real-world example of how Func can be used. It
+// fetches the URLs given in parallel and returns all the unique links
+// found.
 //
 // Note how gathering results from
 func HTMLLinks(urls ...string) (links StringSet, err error) {
@@ -26,15 +27,19 @@ func HTMLLinks(urls ...string) (links StringSet, err error) {
 
 	// we want to get a list of links from each of the sites in urls.
 	//
-	// Reserve space for each of their link sets them up front. This way each goroutine has its own
-	// "slot" in results that it can write to without worrying about concurrent access.
+	// Reserve space for each of their link sets them up front. This
+	// way each goroutine has its own "slot" in results that it can
+	// write to without worrying about concurrent access.
 	//
-	// This trades off memory (might be duplicates between sites, and there's nSites StringSets
-	// instead of just one)
+	// This trades off memory for ease of implementation and
+	// simplicity.
 	results := make([]StringSet, nSites)
 
-	// We want to iterate over urls in parallel, fetching the HTML and parsing the links from each.
-	// This is the func that does the work. idx will go from 0 to nSites
+	// We want to iterate over urls in parallel, fetching the HTML and
+	// parsing the links from each.
+	//
+	// This is the func that does the work. idx will go from 0 to
+	// nSites
 	fn := Func(func(idx int) error {
 		// reading urls is OK since nobody's modifying it concurrently
 		r, err := http.Get(urls[idx])
@@ -47,15 +52,15 @@ func HTMLLinks(urls ...string) (links StringSet, err error) {
 			return err
 		}
 
-		// writing to results[idx] without synchronization is OK since this is the only goroutine
-		// that's writing to that location
+		// writing to results[idx] without synchronization is OK since
+		// this is the only goroutine that's writing to that location
 		results[idx] = parseLinks(doc, results[idx])
 		return nil
 	})
 
 	// run fn a total of nSites times. Run at most 5 concurrently.
-	// Blocks until all are finished, and returns a multierror (go.uber.org/multierr) of all the errors
-	// returned
+	// Blocks until all are finished, and returns a multierror
+	// (go.uber.org/multierr) of all the errors returned
 	err = fn.Do(nSites, 5)
 
 	// return unique links only
@@ -70,7 +75,8 @@ func Scrape(maxDepth int, urls ...string) (links StringSet) {
 	if maxDepth == 0 {
 		return
 	}
-	// even if there was an error we might still have gotten some links
+	// even if there was an error we might still have gotten some
+	// links
 	links, _ = HTMLLinks(urls...)
 	// remove the original urls from found links
 	links.Remove(urls...)
@@ -161,7 +167,7 @@ func (s StringSet) List() (vs []string) {
 
 func (s StringSet) String() string {
 	var (
-		sb strings.Builder
+		sb        strings.Builder
 		firstDone bool
 	)
 	sb.WriteByte('[')

@@ -20,12 +20,14 @@ func ExampleFunc_simple() {
 	// this is the function we'll run.
 	// idx goes from 0 to count.
 	fn := Func(func(idx int) error {
-		// no mutex needed because every goroutine gets a unique idx, so writes never overlap
+		// no mutex needed because every goroutine gets a unique idx,
+		// so writes never overlap
 		results[idx] = input[idx] * 10
 		return nil
 	})
 
-	// run fn count times in parallel. Run at most 5 at a time (concurrently).
+	// run fn count times in parallel. Run at most 5 at a time
+	// (concurrently).
 	if err := fn.Do(count, 5); err != nil {
 		panic(err)
 	}
@@ -54,7 +56,8 @@ func ExampleFuncs() {
 		return nil
 	})
 
-	// run the operations we added. Runs at most GOMAXPROCS in parallel
+	// run the operations we added. Runs at most GOMAXPROCS in
+	// parallel
 	if err := ops.Do(); err != nil {
 		panic(err)
 	}
@@ -64,8 +67,8 @@ func ExampleFuncs() {
 	// Output: done! Ops ran: true true
 }
 
-// TestFunc_Do tests that the right number of funcs are run, and that the maximum concurrency
-// parameter is honored
+// TestFunc_Do tests that the right number of funcs are run, and that
+// the maximum concurrency parameter is honored
 func TestFunc_Do(t *testing.T) {
 	t.Parallel()
 	const N = 100
@@ -81,7 +84,9 @@ func TestFunc_Do(t *testing.T) {
 		ok, release := adder.MaybeAcquire()
 		defer release()
 		if !ok {
-			return fmt.Errorf("goroutine %d running in parallel with another one", idx)
+			return fmt.Errorf(
+				"goroutine %d running in parallel with another one",
+				idx)
 		}
 		adder.count += 1
 		time.Sleep(100 * time.Microsecond)
@@ -93,8 +98,8 @@ func TestFunc_Do(t *testing.T) {
 	assert.EqualValues(t, N, adder.count, "all operations didn't run")
 }
 
-// TestFuncs_Do tests that all given funcs are run, and that the maximum concurrency parameter
-// is honored
+// TestFuncs_Do tests that all given funcs are run, and that the
+// maximum concurrency parameter is honored
 func TestFuncs_Do(t *testing.T) {
 	t.Parallel()
 	const N = 100
@@ -113,7 +118,8 @@ func TestFuncs_Do(t *testing.T) {
 			ok, release := adder.MaybeAcquire()
 			defer release()
 			if !ok {
-				return fmt.Errorf("goroutine %d running in parallel with another one", idx)
+				return fmt.Errorf("goroutine %d running in " +
+					"parallel with another one", idx)
 			}
 			adder.count += 1
 			time.Sleep(100 * time.Microsecond)
