@@ -68,17 +68,22 @@ func (fn Func) Do(count int, maxParallel ...int) (err error) {
 	var wg sync.WaitGroup
 	wg.Add(count)
 	var errs Errors
-	sema := NewSemaphore(max)
-	for i := 0; i < count; i++ {
-		go fn.doOne(i, &wg, sema, &errs)
-	}
+	go fn.doAll(&wg, count, max, &errs)
 	wg.Wait()
 	return errs.Err()
 }
 
+func (fn Func) doAll(wg *sync.WaitGroup, count, max int, errs *Errors) {
+	sema := NewSemaphore(max)
+	for i := 0; i < count; i++ {
+		sema.Acquire()
+		go fn.doOne(i, wg, sema, errs)
+	}
+}
+
 func (fn Func) doOne(i int, wg *sync.WaitGroup, sema Semaphore, errs *Errors) {
 	defer wg.Done()
-	defer sema.AcquireRelease()
+	defer sema.Release()
 	errs.Add(fn(i))
 }
 
@@ -87,12 +92,12 @@ func (fn Func) doOne(i int, wg *sync.WaitGroup, sema Semaphore, errs *Errors) {
 // Funcs is usable
 type Funcs []Func
 
-// Add a new Func to ops
-func (fns *Funcs) Add(op Func) {
-	*fns = append(*fns, op)
+// Add a new Func to fns
+func (fns *Funcs) Add(fn Func) {
+	*fns = append(*fns, fn)
 }
 
-// Do runs all the Funcs in ops. Each Func gets its index number in
+// Do runs all the Funcs in fns. Each Func gets its index number in
 // fns as an argument.
 //
 // Do is not idempotent: all Funcs run on each call.

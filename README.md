@@ -14,14 +14,14 @@ actually perform better than more complex solutions.
 		// this is the function we want to parallelize.
 		// idx will go from 0 to len(input) (see Do call below)
 		fn := Func(func(idx int) error {
-			// no mutex needed because every goroutine gets a unique idx, so writes never overlap
+			// no mutex needed because every goroutine gets a unique 
+			//idx, so writes never overlap
 			results[idx], err := doSomethingCPUIntensiveTo(input[idx])
-
-
 			return err
 		})
 
-		// run fn in parallel len(input) times, with at most GOMAXPROCS at a time.
+		// run fn in parallel len(input) times, with at most 
+		// GOMAXPROCS at a time.
 		err := fn.Do(len(input))
 
 		for i, r := range results {
